@@ -1,8 +1,39 @@
 pico-8 cartridge // http://www.pico-8.com
 version 16
 __lua__
+
+t = 0
+
+function _update()
+  t = t+1
+  ship_upd()
+end
+
 function _draw()
-  pset(60, 60)
+  ship_draw()
+end
+-->8
+// ship
+ship = {
+  sp_width = 3,
+  sp_height = 2,
+  x = 10,
+  y = 60,
+  sp = 0
+}
+
+function ship_upd()
+  if btn(1) then ship.x = ship.x+1 end
+  ship.sp = flr(t/15)%2
+end
+
+function ship_draw()
+  spr(
+    ship.sp*ship.sp_width,
+    ship.x, ship.y,
+    ship.sp_width,
+    ship.sp_height
+  )
 end
 __gfx__
 00b00000bbb000000000000000000000008888800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
