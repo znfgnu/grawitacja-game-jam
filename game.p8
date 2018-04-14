@@ -36,13 +36,37 @@ ship = {
   }
 }
 
+function ship_coll_with_map()
+  cbox = abs_box(ship)
+  -- some first slices (one more than ship's width)
+  for i=1,ship.sp_width+1 do
+    slice = mapp.slices[i]
+    -- iterate over slice, check collisions with every block
+    for j=1,#slice do
+      if is_solid(slice[j]) then
+        map_cbox = {
+          x1 = (i-1)*8,
+          y1 = slice_y_offset + (j-1)*8,
+          x2 = i*8-1,
+          y2 = slice_y_offset + j*8-1,
+        }
+        if coll(cbox, map_cbox) then
+          return true
+        end
+      end
+    end
+  end
+end
+
 function ship_upd()
   local dy = 0
   if btn(2) then dy=-1 end
   if btn(3) then dy=1 end
   -- move and check collision with map
   ship.y = ship.y + dy
-  // todo
+  if ship_coll_with_map() then
+    ship.y = ship.y - dy
+  end
 
   -- change sprite
   ship.sp = flr(t/15)%2
@@ -86,7 +110,9 @@ base_slice = {
 -- slice generator
 function gen_slice()
   local s = t_clone(base_slice)
-  s[3] = block_stone
+  s[1] = block_grass
+  s[2] = block_top_water_flat
+  s[5] = block_stone
   return s
 end
 
@@ -170,9 +196,6 @@ function abs_box(obj)
 end
 
 function coll(box_a, box_b)
-	local box_a = abs_box(a)
-	local box_b = abs_box(b)
-
 	if box_a.x1 > box_b.x2 or
 				box_a.y1 > box_b.y2 or
 				box_b.x1 > box_a.x2 or
