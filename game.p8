@@ -4,6 +4,10 @@ __lua__
 
 t = 0
 
+function _init()
+  //srand(5)
+end
+
 function _update60()
   t = t+1
   background_upd()
@@ -70,7 +74,7 @@ function ship_upd()
 
   -- change sprite
   ship.sp = flr(t/15)%2
-  if t%10 == 0 then ship.fuel = ship.fuel - 1 end
+  if t%30 == 0 then ship.fuel = ship.fuel - 1 end
 end
 
 function ship_draw()
@@ -123,13 +127,13 @@ function slice_decide(solid_top, solid_bottom)
   -- 2: lower
   // rand top
   if water > 2 then
-    if solid_top >= 2 then
+    if solid_top > 2 then
       d.top = random_pick({.8,.1,.1})
     else
       d.top = random_pick({.7,.0,.3})
     end
   else
-    if solid_top >= 2 then
+    if solid_top > 2 then
       d.top = random_pick({.7,.3,.0})
     else
       d.top = 0	-- nothing
@@ -137,18 +141,18 @@ function slice_decide(solid_top, solid_bottom)
   end
   // rand bottom
   if water > 2 then
-    if solid_bottom >= 2 then
+    if solid_bottom > 2 then
       d.bottom = random_pick({.8,.1,.1})
     else
       d.bottom = random_pick({.7,.3,.0})
     end
   else
-    if solid_bottom >= 2 then
+    if solid_bottom > 2 then
       d.bottom = random_pick({.7,.0,.3})
     else
       d.bottom = 0	-- nothing
     end
-  end  
+  end
   return d
 end
 
@@ -180,6 +184,8 @@ function gen_slice()
       no_solid_top = no_solid_top - 1
     end
     s[no_solid_top] = block_top_water_flat
+    if s[no_solid_top-1] == block_top_water_lower_1 then
+    end
     // remove that?
     for i=no_solid_top-1,1,-1 do
       s[i] = block_grass
@@ -271,7 +277,7 @@ end
 
 function map_upd()
   if t%2 == 0 then
-    mapp.draw_offset += 1
+    mapp.draw_offset += 2
     if mapp.draw_offset == 8 then
       new_slice()
       mapp.draw_offset=0
@@ -334,6 +340,7 @@ function random_pick(prob)
     end
     pick = pick - prob[i]
   end
+  return #prob - 1
 end
 -->8
 // background
