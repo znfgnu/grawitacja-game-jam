@@ -7,8 +7,9 @@ t = 0
 function _update()
   t = t+1
   background_upd()
-  ship_upd()
   map_upd()
+  ship_upd()
+  hud_upd()
 end
 
 function _draw()
@@ -16,6 +17,7 @@ function _draw()
   background_draw()
   map_draw()
   ship_draw()
+  hud_draw()
 end
 -->8
 // ship
@@ -24,13 +26,27 @@ ship = {
   sp_height = 2,
   x = 10,
   y = 60,
-  sp = 0
+  sp = 0,
+  fuel = 100,
+  box_rel = {
+    x = 0,
+    y = 8,
+    w = 24,
+    h = 8
+  }
 }
 
 function ship_upd()
-  if btn(2) then ship.y = ship.y-1 end
-  if btn(3) then ship.y = ship.y+1 end
+  local dy = 0
+  if btn(2) then dy=-1 end
+  if btn(3) then dy=1 end
+  -- move and check collision with map
+  ship.y = ship.y + dy
+  // todo
+  
+  -- change sprite  
   ship.sp = flr(t/15)%2
+  if t%30 == 0 then ship.fuel = ship.fuel - 1 end
 end
 
 function ship_draw()
@@ -144,6 +160,15 @@ function t_clone(t)
   return new_t
 end
 
+function abs_box(obj)
+  return {
+    x1 = obj.x + obj.box_rel.x,
+    y1 = obj.y + obj.box_rel.y,
+    x2 = obj.x + obj.w + obj.box_rel.x - 1,
+    y2 = obj.y + obj.h + obj.box_rel.y - 1,
+  }
+end
+
 -->8
 // background
 
@@ -152,6 +177,33 @@ end
 
 function background_draw()
   map(0, 0, 0, 0, 16, 2)
+end
+-->8
+// hud
+
+hud_y = 15*8	-- pixels count from 0
+
+function hud_upd()
+
+end
+
+function hud_draw()
+  rectfill(0, hud_y, 127, 127, 5)
+  -- fuel
+  local pos = {x=1, y=hud_y+1}
+  local width = 30
+  local width2 = ship.fuel/100*width
+  local height = 6
+  rectfill(
+    pos.x, pos.y,
+    pos.x+width, pos.y+height-1,
+    6
+  )
+  rectfill(
+    pos.x, pos.y,
+    pos.x+width2, pos.y+height-1,
+    2
+  )
 end
 __gfx__
 00b00000bbb000000000000000000000008888800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
