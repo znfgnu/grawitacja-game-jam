@@ -4,7 +4,7 @@ __lua__
 
 t = 0
 
-function _update()
+function _update60()
   t = t+1
   background_upd()
   map_upd()
@@ -30,9 +30,9 @@ ship = {
   fuel = 100,
   box_rel = {
     x = 0,
-    y = 12,
+    y = 14,
     w = 24,
-    h = 4
+    h = 2
   }
 }
 
@@ -70,7 +70,7 @@ function ship_upd()
 
   -- change sprite
   ship.sp = flr(t/15)%2
-  if t%30 == 0 then ship.fuel = ship.fuel - 1 end
+  if t%10 == 0 then ship.fuel = ship.fuel - 1 end
 end
 
 function ship_draw()
@@ -80,8 +80,6 @@ function ship_draw()
     ship.sp_width,
     ship.sp_height
   )
-  b = abs_box(ship)
-  rect(b.x1, b.y1, b.x2, b.y2, 1)
 end
 -->8
 // map
@@ -103,11 +101,11 @@ block_bottom_water_higher = 72
 -- slice definition
 base_slice = {
   block_grass,
+  block_grass,
+  block_grass,
+  block_grass,
+  block_grass,
   block_top_water_flat,
-  block_water,
-  block_water,
-  block_water,
-  block_water,
   block_water,
   block_water,
   block_grass,
@@ -123,9 +121,34 @@ function slice_decide(solid_top, solid_bottom)
   -- 0: nothing
   -- 1: higher
   -- 2: lower
-  // todo
-  d.top = 2
-  d.bottom = 2
+  // rand top
+  if water > 2 then
+    if solid_top >= 2 then
+      d.top = random_pick({.8,.1,.1})
+    else
+      d.top = random_pick({.7,.0,.3})
+    end
+  else
+    if solid_top >= 2 then
+      d.top = random_pick({.7,.3,.0})
+    else
+      d.top = 0	-- nothing
+    end
+  end
+  // rand bottom
+  if water > 2 then
+    if solid_bottom >= 2 then
+      d.bottom = random_pick({.8,.1,.1})
+    else
+      d.bottom = random_pick({.7,.3,.0})
+    end
+  else
+    if solid_bottom >= 2 then
+      d.bottom = random_pick({.7,.0,.3})
+    else
+      d.bottom = 0	-- nothing
+    end
+  end  
   return d
 end
 
@@ -152,7 +175,12 @@ function gen_slice()
   local d = slice_decide(no_solid_top, no_solid_bottom)
   -- apply decision top
   if d.top == 0 then
+    if s[no_solid_top] == block_top_water_higher_2 then
+      s[no_solid_top] = block_water
+      no_solid_top = no_solid_top - 1
+    end
     s[no_solid_top] = block_top_water_flat
+    // remove that?
     for i=no_solid_top-1,1,-1 do
       s[i] = block_grass
     end
@@ -164,18 +192,30 @@ function gen_slice()
     s[no_solid_top-1] = block_top_water_higher_1
     s[no_solid_top] = block_top_water_higher_2
   else -- d.top == 2 // lower
-    s[no_solid_top-1] = block_grass
+    if s[no_solid_top] != block_top_water_higher_2 then
+      s[no_solid_top-1] = block_grass
+    else
+      no_solid_top = no_solid_top - 1
+    end
     s[no_solid_top] = block_top_water_lower_1
     s[no_solid_top+1] = block_top_water_lower_2
   end
-  
+
   -- apply decision bottom
   local solid_bottom_start = slice_len - no_solid_bottom + 1
   if d.bottom == 0 then
+    if s[solid_bottom_start] == block_bottom_water_lower then
+      s[solid_bottom_start] = block_water
+      solid_bottom_start = solid_bottom_start + 1
+    end
     for i=solid_bottom_start,slice_len do
       s[i] = block_grass
     end
   elseif d.bottom == 1 then // higher
+    if s[solid_bottom_start] == block_bottom_water_lower then
+      s[solid_bottom_start] = block_water
+      solid_bottom_start = solid_bottom_start + 1
+    end
     s[solid_bottom_start-1] = block_bottom_water_higher
     s[solid_bottom_start] = block_grass
   else -- lower
@@ -184,7 +224,6 @@ function gen_slice()
       solid_bottom_start = solid_bottom_start + 1
     end
     s[solid_bottom_start] = block_bottom_water_lower
-    
   end
   return s
 end
@@ -281,6 +320,20 @@ end
 
 function is_solid(spr_no)
   return fget(spr_no, 0)
+end
+
+function random_pick(prob)
+  local sum = 0
+  for x in all(prob) do
+    sum = sum + x
+  end
+  local pick = rnd(sum)
+  for i=1,#prob do
+    if pick < prob[i] then
+      return i - 1
+    end
+    pick = pick - prob[i]
+  end
 end
 -->8
 // background
@@ -400,7 +453,7 @@ cc555555555555cc0000000000000000000000000000000000000000000000000000000000000000
 55555555555555550000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 55555555555555550000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 __gff__
-0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000001010000000000000000000000000000010100000000000000000100000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000001010100000000000000000000000000010000000000000000000100000000000000000000000000000000000000000000000000000000000000
 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 __map__
 8081808180818081808180818081808100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
