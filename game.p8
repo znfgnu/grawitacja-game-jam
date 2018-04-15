@@ -247,9 +247,9 @@ function ship_upd()
   ship.sp = flr(t/15)%2
   if t%10 == 0 then ship.fuel = ship.fuel - 1 end
   if ship.fuel <= 0 then
-    goto_game_over("out of %%%")
+    goto_game_over(" out of %%%")
   elseif ship.lives <= 0 then
-    goto_game_over("out of lives :<")
+    goto_game_over("out of lives")
   end
 end
 
@@ -520,6 +520,7 @@ function new_items()
 end
 
 function check_hard_coll()
+  local cbox = abs_box(ship)
   local i=5
   local slice = mapp.slices[i]
   for j=1,#slice do
@@ -547,7 +548,7 @@ function map_upd()
       if check_hard_coll() then
         music(-1, 100)
         sfx(21)
-        goto_game_over("crashed")
+        goto_game_over(" crashed :(")
       end
     end
   end
@@ -783,16 +784,16 @@ function game_over_upd()
 end
 
 function game_over_draw()
-  print("g",56,gameover_y1,25)
-  print("a",60,gameover_y2,25)
-  print("m",64,gameover_y3,25)
-  print("e",68,gameover_y4,25)
-  print("o",76,gameover_y5,25)
-  print("v",80,gameover_y6,25)
-  print("e",84,gameover_y7,25)
-  print("r",88,gameover_y8,25)
-  print(game_over_reason,60,45,40)
-  print("points: "..ship.points,56,65, 70)
+  print("g",46,gameover_y1,25)
+  print("a",50,gameover_y2,25)
+  print("m",54,gameover_y3,25)
+  print("e",58,gameover_y4,25)
+  print("o",66,gameover_y5,25)
+  print("v",70,gameover_y6,25)
+  print("e",74,gameover_y7,25)
+  print("r",78,gameover_y8,25)
+  print(game_over_reason,40,45,40)
+  print("points: "..ship.points,46,65, 70)
 end
 -->8
 //music
