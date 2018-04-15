@@ -543,20 +543,33 @@ function random_pick(prob)
 end
 -->8
 // background
+cloud_x=128
+cloud_x2=100
+cloud_x3=55
+
 
 function background_upd()
+		cloud_x=cloud_x-1
+		if cloud_x<-16 then
+		  cloud_x=128
+		end
+		
+		cloud_x2=cloud_x2-1.25
+		if cloud_x2<-16 then
+		  cloud_x2=128
+		end
+		
+		cloud_x3=cloud_x3-1.5
+		if cloud_x3<-16 then
+		  cloud_x3=128
+		end
 end
 
 function background_draw()
   map(0, 0, 0, 0, 16, 2)
-  spr(075,0,0,2,2)
-  spr(075,5,0,2,2)
-  spr(075,25,0,2,2)
-  spr(075,40,0,2,2)
-  spr(075,65,0,2,2)
-  spr(075,70,0,2,2)
-  spr(075,90,0,2,2)
-  spr(075,115,0,2,2)
+  spr(075,cloud_x,0,2,2)
+  spr(075,cloud_x2,1,2,2)
+  spr(075,cloud_x3,2,2,2)
   spr(067,0,5,2,2)
   spr(067,5,5,2,2)
   spr(067,20,5,2,2)
