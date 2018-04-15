@@ -140,8 +140,8 @@ function ship_draw()
     ship.sp_width,
     ship.sp_height
   )
-  b = abs_box(ship)
-  rect(b.x1, b.y1, b.x2, b.y2)
+  //b = abs_box(ship)
+  //rect(b.x1, b.y1, b.x2, b.y2)
 end
 -->8
 // map
