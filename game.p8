@@ -3,25 +3,50 @@ version 16
 __lua__
 
 t = 0
+state = 0
 
-function _init()
-  //srand(5)
+function goto_game()
+  state = 1
+  t = 0
+end
+
+function goto_logo()
+  state = 0
+  t = 0
+end
+
+function goto_game_over(r)
+  game_over_reason = r
+  state = 2
+  t = 0
 end
 
 function _update60()
   t = t+1
-  background_upd()
-  map_upd()
-  ship_upd()
-  hud_upd()
+  if state == 0 then
+    logo_upd()
+  elseif state == 1 then
+    background_upd()
+    map_upd()
+    ship_upd()
+    hud_upd()
+  elseif state == 2 then
+    game_over_upd()
+  end
 end
 
 function _draw()
   cls()
-  background_draw()
-  map_draw()
-  ship_draw()
-  hud_draw()
+  if state == 0 then
+    logo_draw()
+  elseif state == 1 then
+    background_draw()
+    map_draw()
+    ship_draw()
+    hud_draw()
+  elseif state == 2 then
+    game_over_draw()
+  end
 end
 -->8
 // ship
@@ -39,6 +64,33 @@ ship = {
     h = 2
   }
 }
+
+function ship_apply_item(item)
+  if item == item_barrell then
+    ship.fuel = min(100, ship.fuel + 10)
+  end
+end
+
+function ship_coll_with_items()
+  cbox = abs_box(ship)
+  -- some first slices (one more than ship's width)
+  for i=1,no_slices do
+    items = mapp.items[i]
+    -- iterate over slice, check collisions with every block
+    for j=1,#items do
+      map_cbox = {
+        x1 = (i-1)*8,
+        y1 = slice_y_offset + (j-1)*8,
+        x2 = i*8-1,
+        y2 = slice_y_offset + j*8-1,
+      }
+      if coll(cbox, map_cbox) then
+        ship_apply_item(items[j])
+        items[j] = nil
+      end
+    end
+  end
+end
 
 function ship_coll_with_map()
   cbox = abs_box(ship)
@@ -71,10 +123,14 @@ function ship_upd()
   if ship_coll_with_map() then
     ship.y = ship.y - dy
   end
+  ship_coll_with_items()
 
   -- change sprite
   ship.sp = flr(t/15)%2
-  if t%30 == 0 then ship.fuel = ship.fuel - 1 end
+  if t%10 == 0 then ship.fuel = ship.fuel - 1 end
+  if ship.fuel <= 0 then
+    goto_game_over("out of %%%")
+  end
 end
 
 function ship_draw()
@@ -84,6 +140,8 @@ function ship_draw()
     ship.sp_width,
     ship.sp_height
   )
+  b = abs_box(ship)
+  rect(b.x1, b.y1, b.x2, b.y2)
 end
 -->8
 // map
@@ -102,6 +160,8 @@ block_top_water_higher_1 = 71
 block_top_water_higher_2 = 87
 block_bottom_water_lower = 73
 block_bottom_water_higher = 72
+
+item_barrell = 1
 -- slice definition
 base_slice = {
   block_grass,
@@ -256,7 +316,14 @@ mapp = {
     base_slice,
     base_slice,
     base_slice
-  }
+  },
+  items = {
+    {}, {}, {}, {},
+    {}, {}, {}, {},
+    {}, {}, {}, {},
+    {}, {}, {}, {},
+    {}
+  },
 }
 
 function slice_draw(n)
@@ -264,8 +331,12 @@ function slice_draw(n)
   local y = slice_y_offset
   local x = (n-1)*8 - mapp.draw_offset
   local slice = mapp.slices[n]
+  local items = mapp.items[n]
   for i=1,slice_len do
     spr(slice[i], x, y)
+    if items[i] then
+      spr(items[i], x, y)
+    end
     y = y+8
   end
 end
@@ -275,11 +346,26 @@ function new_slice()
   del(mapp.slices, mapp.slices[1])
 end
 
+function gen_items()
+  local ret = {}
+  local s = mapp.slices[#mapp.slices]
+  if s[5] == block_water then
+    ret[5] = item_barrell
+  end
+  return ret
+end
+
+function new_items()
+  add(mapp.items, gen_items())
+  del(mapp.items, mapp.items[1])
+end
+
 function map_upd()
   if t%2 == 0 then
     mapp.draw_offset += 2
     if mapp.draw_offset == 8 then
       new_slice()
+      new_items()
       mapp.draw_offset=0
     end
   end
@@ -288,6 +374,9 @@ end
 function map_draw()
   for i=1,no_slices+1 do
     slice_draw(i)
+  end
+  for i=1,no_slices+1 do
+    items_draw(i)
   end
 end
 
@@ -378,6 +467,30 @@ function hud_draw()
     2
   )
 end
+-->8
+// logo
+function logo_upd()
+  if btn(4) or btn(5) then
+    goto_game()
+  end
+end
+
+function logo_draw()
+  print("miejsce na logo", 0, 20)
+end
+
+// game over
+game_over_reason = ":<"
+function game_over_upd()
+  if btn(4) or btn(5) then
+    goto_logo()
+  end
+end
+
+function game_over_draw()
+  print("game over", 0, 20)
+  print(game_over_reason, 0, 40)
+end
 __gfx__
 00000880000000000000000000000880000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000460088000000000000000000460088000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
@@ -467,17 +580,3 @@ __map__
 9091909190919091909190919091909100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 __sfx__
 000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100006000000000000000000000000000000
-011200001c7501f75021050217552175021755210502305024050240552475024755240502605023050230552375023755210501f0551f0502105000000000001c0501f050210552105000000210502305024055
-01120000230552305000000215501f55521550000001c0501f050210552105000000210502405026055260500000026750287502d7552d7500000028750267502875521750000002175023750247552475000000
-011000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-0115000026750287502a7552a75000000287502675028750217500000021750237502475524750000002675028750217500000021750247502375023750000002475021750237500000000000000000000000000
-011500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-__music__
-00 03420344
-00 01420444
-00 02420344
-00 06424344
-00 06424344
-00 46424344
-
