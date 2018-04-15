@@ -53,14 +53,14 @@ end
 ship = {
   sp_width = 3,
   sp_height = 2,
-  x = 10,
+  x = 11,
   y = 60,
   sp = 0,
   fuel = 100,
   box_rel = {
     x = 0,
     y = 14,
-    w = 24,
+    w = 22,
     h = 2
   }
 }
@@ -140,8 +140,9 @@ function ship_draw()
     ship.sp_width,
     ship.sp_height
   )
-  b = abs_box(ship)
-  rect(b.x1, b.y1, b.x2, b.y2)
+  //b = abs_box(ship)
+  //rect(b.x1, b.y1, b.x2, b.y2)
+  //print(b.x2, 100, 100)
 end
 -->8
 // map
@@ -349,9 +350,21 @@ end
 function gen_items()
   local ret = {}
   local s = mapp.slices[#mapp.slices]
-  if s[5] == block_water then
-    ret[5] = item_barrell
+  
+  local water_idx = {}
+  for i,b in pairs(s) do
+    if b == block_water then
+      add(water_idx, i)
+    end
   end
+  
+  local d = random_pick({.93,.07})
+  if d == 1 then
+    -- find place
+    local p = flr(rnd(#water_idx))+1
+    ret[water_idx[p]] = item_barrell
+  end
+  
   return ret
 end
 
