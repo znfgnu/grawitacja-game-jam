@@ -739,9 +739,9 @@ function game_over_upd()
 end
 
 function game_over_draw()
-  print("game over", 0, 20)
-  print(game_over_reason, 0, 40)
-  print("points: "..ship.points, 0, 70)
+  print("game over",56,56, 25)
+  print(game_over_reason,60,45,40)
+  print("points: "..ship.points,56,65, 70)
 end
 -->8
 //music
