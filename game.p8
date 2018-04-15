@@ -6,8 +6,9 @@ t = 0
 state = 0
 
 function goto_game()
-		ship.lives = 3
+		ship.lives = 5
 		ship.fuel = 100
+		ship.points = 0
 		ship.y = 60
 		mapp.slices = {
     base_slice,
@@ -95,7 +96,8 @@ ship = {
   y = 60,
   sp = 0,
   fuel = 100,
-  lives = 3,
+  lives = 5,
+  points = 0,
   box_rel = {
     x = 0,
     y = 14,
@@ -108,6 +110,10 @@ function ship_apply_item(item)
   if item == item_barrell then
     ship.fuel = min(100, ship.fuel + 10)
   elseif item == item_stone then
+    ship.lives = ship.lives - 1
+  elseif item == item_boat_1 then
+    ship.lives = ship.lives - 1
+  elseif item == item_boat_2 then
     ship.lives = ship.lives - 1
   end
 end
@@ -162,7 +168,7 @@ function shoot()
   sfx(17)
   bullet = {
     x = ship.x + 20,
-    y = ship.y + 8,
+    y = ship.y + 12,
     vel_x = 1,
     x_term = 60,
     box_rel = {
@@ -171,6 +177,32 @@ function shoot()
     }
   }
 end
+
+function bullet_coll()
+  cbox = abs_box(bullet)
+  -- some first slices (one more than ship's width)
+  for i=1,no_slices do
+    items = mapp.items[i]
+    -- iterate over slice, check collisions with every block
+    for j,v in pairs(items) do
+      if v == item_boat_1 or v == item_boat_2 then
+       map_cbox = {
+         x1 = (i-1)*8,
+         y1 = slice_y_offset + (j-1)*8,
+         x2 = i*8-1,
+         y2 = slice_y_offset + j*8-1,
+       }
+       if coll(cbox, map_cbox) then
+         items[j] = nil
+         bullet = nil
+         ship.points = ship.points + 1
+         return
+       end
+     end
+    end
+  end
+end
+
 
 function ship_upd()
   local dy = 0
@@ -188,6 +220,8 @@ function ship_upd()
     bullet.x = bullet.x + bullet.vel_x
     if bullet.x > bullet.x_term then
       bullet = nil
+    else
+      bullet_coll()
     end
   end
 
@@ -232,6 +266,8 @@ block_bottom_water_higher = 72
 
 item_barrell = 113
 item_stone = 112
+item_boat_1 = 6
+item_boat_2 = 7
 -- slice definition
 base_slice = {
   block_grass,
@@ -419,17 +455,21 @@ end
 function gen_items()
   local ret = {}
   local s = mapp.slices[#mapp.slices]
+  local itms = mapp.items[#mapp.items]
 
   local water_idx = {}
   for i,b in pairs(s) do
-    if b == block_water then
+    if itms[i] == item_boat_1 then
+      ret[i] = item_boat_2
+    elseif b == block_water then
       add(water_idx, i)
     end
+    
   end
 
   -- barrell
   local d = random_pick({.93,.07})
-  if d == 1 then
+  if d == 1 and #water_idx>1 then
     -- find place
     local p = flr(rnd(#water_idx))+1
     ret[water_idx[p]] = item_barrell
@@ -437,10 +477,18 @@ function gen_items()
   end
 
   -- stone
-  d = random_pick({.90,.10})
-  if d == 1 then
+  d = random_pick({.98,.02})
+  if d == 1 and #water_idx>1 then
     local p = flr(rnd(#water_idx))+1
     ret[water_idx[p]] = item_stone
+    del(water_idx, p)
+  end
+
+  -- boat
+  d = random_pick({.95,.05})
+  if d == 1 and #water_idx > 1 then
+    local p = flr(rnd(#water_idx))+1
+    ret[water_idx[p]] = item_boat_1
     del(water_idx, p)
   end
 
@@ -596,11 +644,11 @@ end
 function hud_draw()
   rectfill(0, hud_y, 127, 127, 5)
   -- fuel
-  local pos = {x=41, y=hud_y+1}
+  local pos = {x=13, y=hud_y+1}
   local width = 30
   local width2 = ship.fuel/100*width
   local height = 6
-  print("firewater:", 1, hud_y+1, 2)
+  print("%%%", 1, hud_y+1, 2)
   rectfill(
     pos.x, pos.y,
     pos.x+width, pos.y+height-1,
@@ -611,14 +659,15 @@ function hud_draw()
     pos.x+width2, pos.y+height-1,
     2
   )
+  print(ship.points, 55, hud_y+1)
   
   --draw the hearts
   for i=1,ship.lives do
-  	spr(077,90+i*8,hud_y)
+  	spr(077,80+i*8,hud_y)
   end
   
-  for i=3,ship.lives+1,-1 do
-  	spr(078,90+i*8,hud_y)
+  for i=5,ship.lives+1,-1 do
+  	spr(078,80+i*8,hud_y)
   end
 end
 -->8
@@ -683,6 +732,7 @@ end
 function game_over_draw()
   print("game over", 0, 20)
   print(game_over_reason, 0, 40)
+  print("points: "..ship.points, 0, 70)
 end
 -->8
 //music
