@@ -77,7 +77,7 @@ function ship_coll_with_items()
   for i=1,no_slices do
     items = mapp.items[i]
     -- iterate over slice, check collisions with every block
-    for j=1,#items do
+    for j,v in pairs(items) do
       map_cbox = {
         x1 = (i-1)*8,
         y1 = slice_y_offset + (j-1)*8,
