@@ -6,6 +6,7 @@ t = 0
 state = 0
 
 function goto_game()
+		music(0)
   state = 1
   t = 0
 end
