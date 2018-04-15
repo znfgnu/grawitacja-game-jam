@@ -7,12 +7,44 @@ state = 0
 
 function goto_game()
 		music(0)
+		ship.lives = 3
+		ship.fuel = 100
+		ship.y = 60
+		mapp.slices = {
+    base_slice,
+    base_slice,
+    base_slice,
+    base_slice,
+    base_slice,
+    base_slice,
+    base_slice,
+    base_slice,
+    base_slice,
+    base_slice,
+    base_slice,
+    base_slice,
+    base_slice,
+    base_slice,
+    base_slice,
+    base_slice,
+    base_slice
+  }
+  mapp.draw_offset = 0
+  mapp.items = {
+    {}, {}, {}, {},
+    {}, {}, {}, {},
+    {}, {}, {}, {},
+    {}, {}, {}, {},
+    {}
+  }
+  
   state = 1
   t = 0
 end
 
 function goto_logo()
   state = 0
+  logoanim = 1
   t = 0
 end
 
@@ -58,6 +90,7 @@ ship = {
   y = 60,
   sp = 0,
   fuel = 100,
+  lives = 3,
   box_rel = {
     x = 0,
     y = 14,
@@ -69,6 +102,8 @@ ship = {
 function ship_apply_item(item)
   if item == item_barrell then
     ship.fuel = min(100, ship.fuel + 10)
+  elseif item == item_stone then
+    ship.lives = ship.lives - 1
   end
 end
 
@@ -115,22 +150,48 @@ function ship_coll_with_map()
   end
 end
 
+bullet = nil
+
+function shoot()
+  if bullet != nil then return end
+  bullet = {
+    x = ship.x + 20,
+    y = ship.y + 8,
+    vel_x = 1,
+    x_term = 60,
+    box_rel = {
+      x=0, y=0,
+      w=2, h=2
+    }
+  }
+end
+
 function ship_upd()
   local dy = 0
   if btn(2) then dy=-1 end
   if btn(3) then dy=1 end
+  if btn(4) then shoot() end
   -- move and check collision with map
   ship.y = ship.y + dy
   if ship_coll_with_map() then
     ship.y = ship.y - dy
   end
   ship_coll_with_items()
+  
+  if bullet != nil then
+    bullet.x = bullet.x + bullet.vel_x
+    if bullet.x > bullet.x_term then
+      bullet = nil
+    end
+  end
 
   -- change sprite
   ship.sp = flr(t/15)%2
   if t%10 == 0 then ship.fuel = ship.fuel - 1 end
   if ship.fuel <= 0 then
     goto_game_over("out of %%%")
+  elseif ship.lives <= 0 then
+    goto_game_over("out of lives :<")
   end
 end
 
@@ -141,8 +202,10 @@ function ship_draw()
     ship.sp_width,
     ship.sp_height
   )
-  //b = abs_box(ship)
-  //rect(b.x1, b.y1, b.x2, b.y2)
+  if bullet != nil then
+    b = abs_box(bullet)
+    rect(b.x1, b.y1, b.x2, b.y2, 5)
+  end
   //print(b.x2, 100, 100)
 end
 -->8
@@ -154,7 +217,6 @@ slice_y_offset = 16
 block_top_water_flat = 64
 block_water = 80
 block_grass = 96
-block_stone = 112
 
 block_top_water_lower_1 = 70
 block_top_water_lower_2 = 86
@@ -163,7 +225,8 @@ block_top_water_higher_2 = 87
 block_bottom_water_lower = 73
 block_bottom_water_higher = 72
 
-item_barrell = 1
+item_barrell = 113
+item_stone = 112
 -- slice definition
 base_slice = {
   block_grass,
@@ -359,11 +422,21 @@ function gen_items()
     end
   end
   
+  -- barrell
   local d = random_pick({.93,.07})
   if d == 1 then
     -- find place
     local p = flr(rnd(#water_idx))+1
     ret[water_idx[p]] = item_barrell
+    del(water_idx, p)
+  end
+  
+  -- stone
+  d = random_pick({.80,.20})
+  if d == 1 then
+    local p = flr(rnd(#water_idx))+1
+    ret[water_idx[p]] = item_stone
+    del(water_idx, p)
   end
   
   return ret
@@ -480,10 +553,8 @@ function hud_draw()
 end
 -->8
 // logo
-t=0
-
 logoanim=1
-logostop=31
+logostop=131
 logofr=70
 function logo_draw()
 	local cx = 55
@@ -492,32 +563,42 @@ function logo_draw()
 	local fry=96//flr(logofr/16)*8
 	for s=0,logoanim do
 		for x=0,15 do
-			camera(rnd(30/t),
-				rnd(30/t))
-		for y=0,15 do
-			if(x+y==s) then
-				pset(cx+x,cy+y,12)
-			elseif(x+y==s-1) then
-				pset(cx+x,cy+y,6) 
-			elseif(x+y<s-1) then
-				pset(cx+x,cy+y,
-					sget(frx+x,fry+y))
-			end
-		end
-	end
+			camera(rnd(130/t),
+				rnd(130/t))
+	  for y=0,15 do
+			 if(x+y==s) then
+			 	pset(cx+x,cy+y,12)
+			 elseif(x+y==s-1) then
+			 	pset(cx+x,cy+y,6) 
+			 elseif(x+y<s-1) then
+			 	pset(cx+x,cy+y,
+			 		sget(frx+x,fry+y))
+			 end
+	 	end
+ 	end
+ end
+
+ if(logoanim<=logostop) logoanim+=1
+ if(t > 100) then
+ 	print("pirrrates",46,cy+20,9)
+ 	print("of the",52,cy+26,8)
+ 	print("river",54,cy+32,12)
+ end
+ if t>logostop then
+   local vis = flr(t-logostop/60)%2
+   if vis == 1 then
+     print("press fire", 44, cy+40, 4)
+   end
+ end
+ 
 end
 
-if(logoanim<=logostop) logoanim+=1
-if(t > 35) then
-	print("pirrrates",46,cy+20,9)
-	print("of the",52,cy+26,8)
-	print("river",54,cy+32,12)
- end
-end
 
 function logo_upd()
+  if t>logostop then
   if btn(4) or btn(5) then
     goto_game()
+  end
   end
 end
 
@@ -592,14 +673,14 @@ cccccccc0000000000000000000000000000000000000000cccccccccccccccc0000000000000000
 333b3333000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 33333333000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 33333333000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-cccccccc000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-cccc55cc000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-ccc5555c000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-c555555c000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-c556555c000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-c56c666c000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-c6cccccc000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-cccccccc000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+cccccccccccc4ccc0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+cccc55ccccc4aacc0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+ccc5555ccc44444c0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+c555555cc44444440000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+c556555c4446464c0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+c56c666c46cccccc0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+c6cccccccccccccc0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+cccccccccccccccc0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 cccccccccccccccc0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 cccccccccccccccc0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 cccccccccccccccc0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
