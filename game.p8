@@ -730,14 +730,61 @@ end
 
 // game over
 game_over_reason = ":<"
+gameover_y1=-1
+gameover_y2=-3
+gameover_y3=-5
+gameover_y4=-7
+gameover_y5=-9
+gameover_y6=-11
+gameover_y7=-13
+gameover_y8=-15
+
 function game_over_upd()
+  if gameover_y1 < 56 then
+    gameover_y1=gameover_y1+1
+  end
+  
+   if gameover_y2 < 56 then
+    gameover_y2=gameover_y2+1
+  end
+  
+   if gameover_y3 < 56 then
+    gameover_y3=gameover_y3+1
+  end
+
+ if gameover_y4 < 56 then
+    gameover_y4=gameover_y4+1
+  end
+
+ if gameover_y5 < 56 then
+    gameover_y5=gameover_y5+1
+  end
+  
+ if gameover_y6 < 56 then
+    gameover_y6=gameover_y6+1
+ end
+ 
+ if gameover_y7 < 56 then
+    gameover_y7=gameover_y7+1
+  end
+  
+ if gameover_y8 < 56 then
+    gameover_y8=gameover_y8+1
+  end
   if btn(4) or btn(5) then
-    goto_logo()
+    goto_logo()    
   end
 end
 
 function game_over_draw()
-  print("game over",56,56, 25)
+  print("g",56,gameover_y1,25)
+  print("a",60,gameover_y2,25)
+  print("m",64,gameover_y3,25)
+  print("e",68,gameover_y4,25)
+  print("o",76,gameover_y5,25)
+  print("v",80,gameover_y6,25)
+  print("e",84,gameover_y7,25)
+  print("r",88,gameover_y8,25)
   print(game_over_reason,60,45,40)
   print("points: "..ship.points,56,65, 70)
 end
