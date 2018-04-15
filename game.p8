@@ -210,8 +210,7 @@ function ship_draw()
   if bullet != nil then
     b = abs_box(bullet)
     rect(b.x1, b.y1, b.x2, b.y2, 5)
-  end
-  //print(b.x2, 100, 100)
+  end  
 end
 -->8
 // map
@@ -452,6 +451,24 @@ function new_items()
   del(mapp.items, mapp.items[1])
 end
 
+function check_hard_coll()
+  local i=5
+  local slice = mapp.slices[i]
+  for j=1,#slice do
+    if is_solid(slice[j]) then
+      map_cbox = {
+        x1 = (i-1)*8,
+          y1 = slice_y_offset + (j-1)*8,
+          x2 = i*8-1,
+          y2 = slice_y_offset + j*8-1,
+        }
+      if coll(cbox, map_cbox) then
+        return true
+      end
+    end
+  end
+end
+
 function map_upd()
   if t%2 == 0 then
     mapp.draw_offset += 2
@@ -459,6 +476,9 @@ function map_upd()
       new_slice()
       new_items()
       mapp.draw_offset=0
+      if check_hard_coll() then
+        goto_game_over("crashed")
+      end
     end
   end
 end
