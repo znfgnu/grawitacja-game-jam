@@ -52,6 +52,15 @@ end
 
 function goto_game_over(r)
   game_over_reason = r
+  gameover_y1=-1
+gameover_y2=-3
+gameover_y3=-5
+gameover_y4=-7
+gameover_y5=-9
+gameover_y6=-11
+gameover_y7=-13
+gameover_y8=-15
+
   state = 2
   t = 0
 end
@@ -735,14 +744,6 @@ end
 
 // game over
 game_over_reason = ":<"
-gameover_y1=-1
-gameover_y2=-3
-gameover_y3=-5
-gameover_y4=-7
-gameover_y5=-9
-gameover_y6=-11
-gameover_y7=-13
-gameover_y8=-15
 
 function game_over_upd()
   if gameover_y1 < 56 then
