@@ -559,7 +559,7 @@ end
 -->8
 // logo
 logoanim=1
-logostop=131
+logostop=61
 logofr=70
 function logo_draw()
 	local cx = 55
@@ -568,8 +568,8 @@ function logo_draw()
 	local fry=96//flr(logofr/16)*8
 	for s=0,logoanim do
 		for x=0,15 do
-			camera(rnd(130/t),
-				rnd(130/t))
+			camera(rnd(60/t),
+				rnd(60/t))
 	  for y=0,15 do
 			 if(x+y==s) then
 			 	pset(cx+x,cy+y,12)
@@ -584,13 +584,13 @@ function logo_draw()
  end
 
  if(logoanim<=logostop) logoanim+=1
- if(t > 100) then
+ if(t > 70) then
  	print("pirrrates",46,cy+20,9)
  	print("of the",52,cy+26,8)
  	print("river",54,cy+32,12)
  end
- if t>logostop then
-   local vis = flr(t-logostop/60)%2
+ if t>80 then
+   local vis = flr((t-80)/10)%2
    if vis == 1 then
      print("press fire", 44, cy+40, 4)
    end
@@ -768,3 +768,4 @@ __music__
 01 0d090a44
 01 090a0c44
 01 090a0c44
+
