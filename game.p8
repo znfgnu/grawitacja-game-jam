@@ -91,7 +91,7 @@ end
 ship = {
   sp_width = 3,
   sp_height = 2,
-  x = 11,
+  x = 13,
   y = 60,
   sp = 0,
   fuel = 100,
@@ -99,7 +99,7 @@ ship = {
   box_rel = {
     x = 0,
     y = 14,
-    w = 22,
+    w = 20,
     h = 2
   }
 }
@@ -583,10 +583,11 @@ end
 function hud_draw()
   rectfill(0, hud_y, 127, 127, 5)
   -- fuel
-  local pos = {x=1, y=hud_y+1}
+  local pos = {x=41, y=hud_y+1}
   local width = 30
   local width2 = ship.fuel/100*width
   local height = 6
+  print("firewater:", 1, hud_y+1, 2)
   rectfill(
     pos.x, pos.y,
     pos.x+width, pos.y+height-1,
